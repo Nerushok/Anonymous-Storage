@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="margin_unit_half">4dp</dimen>
+    <dimen name="margin_unit">8dp</dimen>
+    <dimen name="margin_unit_x2">16dp</dimen>
+    <dimen name="margin_unit_x3">24dp</dimen>
+    <dimen name="margin_unit_x4">32dp</dimen>
+    <dimen name="margin_unit_x8">64dp</dimen>
+
+</resources>

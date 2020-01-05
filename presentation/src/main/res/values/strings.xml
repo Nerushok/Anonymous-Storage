@@ -1,3 +1,10 @@
 <resources>
+
     <string name="app_name">Anonymous Storage</string>
+
+    <string name="text_will_delete_after">Will delete after:</string>
+
+    <string name="text_saved">Saved</string>
+    <string name="text_unknown_error">Unknown error</string>
+
 </resources>

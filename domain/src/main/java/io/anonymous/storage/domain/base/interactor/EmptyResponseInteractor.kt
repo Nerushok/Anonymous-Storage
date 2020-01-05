@@ -9,5 +9,5 @@ abstract class EmptyResponseInteractor<Request> : BaseInteractor<Request, Nothin
         return Nothing
     }
 
-    protected abstract fun action(request: Request)
+    protected abstract suspend fun action(request: Request)
 }
