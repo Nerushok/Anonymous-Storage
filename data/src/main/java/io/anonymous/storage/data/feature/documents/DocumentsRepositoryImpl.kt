@@ -15,6 +15,8 @@ class DocumentsRepositoryImpl(
     private val documentRemoteMapper: DocumentRemoteMapper
 ) : DocumentsRepository {
 
+    private val LOG_TAG = "DocumentsRepositoryImpl"
+
     override suspend fun getDocumentByKey(key: DocumentKey): Document? {
         val documentSnapshot = firestoreController.getDocumentsDatabase()
             .document(key.key)
@@ -34,6 +36,6 @@ class DocumentsRepositoryImpl(
             .call(request)
             .getTaskResult()
 
-        Log.d("TEST", response.data.toString())
+        Log.d(LOG_TAG, response.data.toString())
     }
 }
