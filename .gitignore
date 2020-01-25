@@ -14,4 +14,7 @@
 .cxx
 /.idea/dictionaries/sergeynerush.xml
 
+*.aab
+*.apk
+
 upload-keystore.jks
