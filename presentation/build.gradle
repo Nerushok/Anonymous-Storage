@@ -2,6 +2,14 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
+    signingConfigs {
+        release {
+            storeFile file('/Users/sergeynerush/AndroidStudioProjects/AnonymousStorage/upload-keystore.jks')
+            storePassword 'anonimstore'
+            keyPassword 'anonimstore'
+            keyAlias 'anonimstore'
+        }
+    }
     compileSdkVersion 29
     defaultConfig {
         applicationId "io.anonymous.storage"
@@ -15,6 +23,8 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -37,6 +47,7 @@ dependencies {
     implementation androidCoreDependencies.appCompat
     implementation androidCoreDependencies.design
     implementation androidCoreDependencies.coreKtx
+    implementation androidCoreDependencies.billing
 
     // Architecture Components
     implementation architectureComponents.liveData
