@@ -11,7 +11,9 @@ import androidx.lifecycle.Observer
 import io.anonymous.storage.R
 import io.anonymous.storage.databinding.ActivityDocumentContentBinding
 import io.anonymous.storage.domain.common.model.Document
+import io.anonymous.storage.domain.common.model.DocumentPurchasingType
 import io.anonymous.storage.presentation.base.BaseActivity
+import io.anonymous.storage.presentation.ui.purchase.PurchaseActivity
 import io.anonymous.storage.presentation.utils.LiveEventCallback
 import io.anonymous.storage.presentation.utils.extentions.toast
 import org.koin.android.viewmodel.ext.android.viewModel
@@ -66,10 +68,12 @@ class DocumentContentActivity : BaseActivity() {
             onDocumentContentChanged(editable ?: return@addTextChangedListener)
         }
         binding.buttonSaveDocument.setOnClickListener { saveDocument() }
+        binding.buttonBuyDocument.setOnClickListener { buyDocumentKey() }
     }
 
     private fun updateDocument(document: Document) {
         updateLifeTimeTimer(document)
+        updateLifeTimeType(document)
         with(binding.textRawData) {
             setText(document.rawData)
             setSelection(document.rawData.length)
@@ -97,6 +101,10 @@ class DocumentContentActivity : BaseActivity() {
         binding.layoutLifeTimeTimer.isVisible = true
     }
 
+    private fun updateLifeTimeType(document: Document) {
+        binding.buttonBuyDocument.isVisible = document.documentPurchasingType == DocumentPurchasingType.Trial
+    }
+
     private fun onDocumentContentChanged(editable: Editable) {
         viewModel.onDocumentContentChanged(editable.toString())
     }
@@ -108,6 +116,10 @@ class DocumentContentActivity : BaseActivity() {
             onSuccessCallback = LiveEventCallback(this) {
                 toast(R.string.text_saved)
             })
+    }
+
+    private fun buyDocumentKey() {
+        PurchaseActivity.start(this, viewModel.document.value?.key ?: return)
     }
 
 

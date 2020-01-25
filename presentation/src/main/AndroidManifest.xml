@@ -25,6 +25,9 @@
             android:name=".presentation.ui.document.DocumentContentActivity"
             android:screenOrientation="portrait" />
 
+        <activity android:name=".presentation.ui.purchase.PurchaseActivity"
+            android:screenOrientation="portrait" />
+
     </application>
 
 </manifest>

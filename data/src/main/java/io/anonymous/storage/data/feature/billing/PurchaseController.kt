@@ -9,7 +9,7 @@ interface PurchaseController {
 
     suspend fun init(): Boolean
 
-    suspend fun setPurchaseCallback(purchaseCallback: PurchaseCallback?)
+    fun setPurchaseCallback(purchaseCallback: PurchaseCallback?)
 
     suspend fun buyDocumentLifetime(activity: Activity, documentKey: DocumentKey, skuDetails: SkuDetails)
 

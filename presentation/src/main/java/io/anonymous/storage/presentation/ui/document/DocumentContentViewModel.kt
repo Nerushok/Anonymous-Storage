@@ -10,7 +10,7 @@ import io.anonymous.storage.presentation.utils.LiveEventCallback
 import io.anonymous.storage.presentation.utils.extentions.asLiveData
 import kotlinx.coroutines.launch
 
-class DocumentContentViewModel constructor(
+class DocumentContentViewModel(
     documentLinkHolder: DocumentLinkHolder,
     private val saveDocumentContentUseCase: SaveDocumentContentUseCase
 ) : BaseViewModel() {
