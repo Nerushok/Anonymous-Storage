@@ -37,7 +37,7 @@ class DocumentContentViewModel(
                 SaveDocumentContentUseCase.Request(documentKey, content),
                 onSuccess = {
                     _document.postValue(document.value?.copy(rawData = content))
-                    _isSaveEnabled.value = false
+                    _isSaveEnabled.postValue(false)
                     onSuccessCallback.post(Unit)
                 },
                 onFailure = { error -> postError(error) }
