@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.SkuDetails
 import io.anonymous.storage.data.feature.billing.PurchaseController
+import io.anonymous.storage.domain.base.exception.AppException
 import io.anonymous.storage.domain.base.exception.UnknownException
 import io.anonymous.storage.domain.common.model.DocumentKey
 import io.anonymous.storage.presentation.base.BaseViewModel
@@ -18,14 +19,17 @@ class PurchaseViewModel(private val purchaseController: PurchaseController) : Ba
     private val _skuDetails = MutableLiveData<SkuDetails>()
     val skuDetails = _skuDetails.asLiveData()
 
+    private val _successPurchase = MutableLiveData<Purchase>()
+    val successPurchase = _successPurchase.asLiveData()
+
     init {
         purchaseController.setPurchaseCallback(object : PurchaseController.PurchaseCallback {
             override fun onPurchased(purchase: Purchase) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                _successPurchase.postValue(purchase)
             }
 
             override fun onError(errorCode: Int) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                postError(UnknownException())
             }
         })
         loadSkuDetails()

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.Observer
@@ -20,6 +21,8 @@ import org.koin.android.viewmodel.ext.android.viewModel
 
 class DocumentContentActivity : BaseActivity() {
 
+    private val REQUEST_CODE_PURCHASE_ACTIVITY = 1024
+
     private val viewModel: DocumentContentViewModel by viewModel()
     private lateinit var binding: ActivityDocumentContentBinding
 
@@ -29,6 +32,13 @@ class DocumentContentActivity : BaseActivity() {
         setContentView(binding.root)
         initViews()
         observeViewModel()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_CODE_PURCHASE_ACTIVITY && PurchaseActivity.isActivityResultPurchased(resultCode)) {
+            viewModel.syncDocumentWithRemote()
+            showCongratsDialog()
+        } else super.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun setError(error: Exception?) {
@@ -102,6 +112,7 @@ class DocumentContentActivity : BaseActivity() {
     }
 
     private fun updateLifeTimeType(document: Document) {
+        binding.imageDocumentPurchased.isVisible = document.documentPurchasingType == DocumentPurchasingType.Purchased
         binding.buttonBuyDocument.isVisible = document.documentPurchasingType == DocumentPurchasingType.Trial
     }
 
@@ -119,7 +130,15 @@ class DocumentContentActivity : BaseActivity() {
     }
 
     private fun buyDocumentKey() {
-        PurchaseActivity.start(this, viewModel.document.value?.key ?: return)
+        PurchaseActivity.start(this, viewModel.document.value?.key ?: return, REQUEST_CODE_PURCHASE_ACTIVITY)
+    }
+
+    private fun showCongratsDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.text_congrats_dialog_title)
+            .setMessage(R.string.text_congrats_dialog_content)
+            .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.dismiss() }
+            .show()
     }
 
 

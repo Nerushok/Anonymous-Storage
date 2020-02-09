@@ -36,7 +36,7 @@ val MappersModule = module {
 
 val ViewModelModule = module {
     viewModel { MainViewModel(get(), get()) }
-    viewModel { DocumentContentViewModel(get(), get()) }
+    viewModel { DocumentContentViewModel(get(), get(), get()) }
     viewModel { PurchaseViewModel(get()) }
 }
 

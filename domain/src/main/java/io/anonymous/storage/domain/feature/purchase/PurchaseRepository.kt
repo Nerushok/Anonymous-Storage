@@ -4,5 +4,5 @@ import io.anonymous.storage.domain.common.model.DocumentKey
 
 interface PurchaseRepository {
 
-    suspend fun buyDocumentLifetime(key: DocumentKey, purchaseToken: String)
+    suspend fun buyDocumentLifetime(key: DocumentKey, purchaseToken: String, sku: String)
 }

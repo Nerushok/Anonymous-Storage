@@ -3,6 +3,7 @@ package io.anonymous.storage.presentation.ui.document
 import androidx.lifecycle.MutableLiveData
 import io.anonymous.storage.domain.common.model.DocumentKey
 import io.anonymous.storage.domain.extentions.execute
+import io.anonymous.storage.domain.feature.documents.GetDocumentUseCase
 import io.anonymous.storage.domain.feature.documents.SaveDocumentContentUseCase
 import io.anonymous.storage.presentation.base.BaseViewModel
 import io.anonymous.storage.presentation.common.DocumentLinkHolder
@@ -12,6 +13,7 @@ import kotlinx.coroutines.launch
 
 class DocumentContentViewModel(
     documentLinkHolder: DocumentLinkHolder,
+    private val getDocumentUseCase: GetDocumentUseCase,
     private val saveDocumentContentUseCase: SaveDocumentContentUseCase
 ) : BaseViewModel() {
 
@@ -20,6 +22,18 @@ class DocumentContentViewModel(
 
     private val _isSaveEnabled = MutableLiveData(false)
     val isSaveEnabled = _isSaveEnabled.asLiveData()
+
+    fun syncDocumentWithRemote() {
+        setLoading(true)
+        launch {
+            getDocumentUseCase.execute(
+                DocumentKey(document.value?.key ?: return@launch),
+                onSuccess = { document -> _document.postValue(document) },
+                onFailure = { error -> postError(error) }
+            )
+            postLoading(false)
+        }
+    }
 
     fun onDocumentContentChanged(newDocumentContent: String) {
         updateIsSaveEnabledState(newDocumentContent)

@@ -13,6 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
@@ -55,12 +56,25 @@ class BillingController(
     ) {
         Log.d(LOG_TAG, "buyDocumentLifetime")
 
+        if (currentDocumentKey != null || currentSkuDetails != null) {
+            purchaseCallback?.onError(ResponseCodes.BILLING_UNAVAILABLE)
+            return
+        }
+
         currentDocumentKey = documentKey
         currentSkuDetails = skuDetails
 
         val billingFlowParams = BillingFlowParams.newBuilder().setSkuDetails(skuDetails).build()
         val result = billingClient.launchBillingFlow(activity, billingFlowParams)
         Log.d(LOG_TAG, "buyDocumentLifetime. ${billingResultLogMessage(result)}")
+
+        if (result.responseCode == ResponseCodes.OK) return
+        else if (result.responseCode == ResponseCodes.ITEM_ALREADY_OWNED) {
+            handlePendingPurchases()
+        } else {
+            resetCurrentPurchase()
+            purchaseCallback?.onError(result.responseCode)
+        }
     }
 
     override suspend fun getDocumentLifetimeSkuDetails(): SkuDetails? {
@@ -71,11 +85,14 @@ class BillingController(
     override fun onPurchasesUpdated(result: BillingResult, purchases: MutableList<Purchase>?) {
         Log.d(LOG_TAG, "onPurchasesUpdated. ${billingResultLogMessage(result)}")
 
-        if (result.responseCode == ResponseCodes.OK && !purchases.isNullOrEmpty()) {
+        if (!purchases.isNullOrEmpty() && (result.responseCode == ResponseCodes.OK || result.responseCode == ResponseCodes.ITEM_ALREADY_OWNED)) {
             for (purchase in purchases) {
                 handlePurchase(purchase)
             }
-        } else purchaseCallback?.onError(result.responseCode)
+        } else {
+            resetCurrentPurchase()
+            purchaseCallback?.onError(result.responseCode)
+        }
     }
 
     private suspend fun connectBillingClient(): Boolean {
@@ -115,10 +132,23 @@ class BillingController(
         }
     }
 
+    private fun handlePendingPurchases() {
+        val result = billingClient.queryPurchases(BillingClient.SkuType.INAPP)
+        Log.d(LOG_TAG, "handlePendingPurchases. ${billingResultLogMessage(result.billingResult)}")
+
+        if (result.responseCode == ResponseCodes.OK) {
+            for (purchase in result.purchasesList) handlePurchase(purchase)
+        } else {
+            resetCurrentPurchase()
+            purchaseCallback?.onError(result.responseCode)
+        }
+    }
+
     private suspend fun getSkuDetails(): List<SkuDetails> {
         val params = SkuDetailsParams.newBuilder()
             .setSkusList(listOf(PRODUCT_ID_DOCUMENT_YEAR_LIFETIME))
             .setType(BillingClient.SkuType.INAPP)
+
         return try {
             suspendCoroutine { continuation ->
                 billingClient.querySkuDetailsAsync(params.build()) { result, details ->
@@ -138,13 +168,16 @@ class BillingController(
     private fun handlePurchase(purchase: Purchase) {
         Log.d(LOG_TAG, "handlePurchase. Purchase - $purchase")
         when (purchase.purchaseState) {
-            PurchaseState.PURCHASED -> {
-                validatePurchase(purchase)
-            }
+            PurchaseState.PURCHASED -> validatePurchase(purchase)
             PurchaseState.PENDING -> {
-                // TODO: handle pending transaction
+                /* TODO: handle pending transaction */
+                resetCurrentPurchase()
+                purchaseCallback?.onError(ResponseCodes.DEVELOPER_ERROR)
             }
-            PurchaseState.UNSPECIFIED_STATE -> { /* Unspecified situation */
+            PurchaseState.UNSPECIFIED_STATE -> {
+                /* Unspecified situation */
+                resetCurrentPurchase()
+                purchaseCallback?.onError(ResponseCodes.DEVELOPER_ERROR)
             }
         }
     }
@@ -152,13 +185,18 @@ class BillingController(
     private fun validatePurchase(purchase: Purchase) {
         Log.d(LOG_TAG, "validatePurchase. Document key - ${currentDocumentKey?.key}. Purchase token - ${purchase.purchaseToken}")
 
-        val request = ValidatePurchaseUseCase.Request(currentDocumentKey ?: return, purchase.purchaseToken)
+        val request = ValidatePurchaseUseCase.Request(
+            currentDocumentKey ?: return,
+            purchase.purchaseToken,
+            currentSkuDetails?.sku ?: return
+        )
 
         launch {
             validatePurchaseUseCase.execute(
                 request,
                 onSuccess = { acknowledgePurchase(purchase) },
                 onFailure = { error ->
+                    resetCurrentPurchase()
                     purchaseCallback?.onError(ResponseCodes.DEVELOPER_ERROR)
                     Log.d(LOG_TAG, error.message ?: "Unknown error")
                 }
@@ -176,15 +214,25 @@ class BillingController(
         billingClient.acknowledgePurchase(acknowledgePurchaseParams) { billingResult ->
             Log.d(LOG_TAG, "acknowledgePurchase. ${billingResultLogMessage(billingResult)}")
             if (billingResult.responseCode == ResponseCodes.OK) {
+                Log.d(LOG_TAG, "acknowledgePurchase. Success purchase - $purchase")
                 purchaseCallback?.onPurchased(purchase)
             } else {
                 purchaseCallback?.onError(billingResult.responseCode)
             }
+            resetCurrentPurchase()
         }
     }
 
     private fun createPayloadForPurchase(purchaseToken: String): String {
-        return "Document key: $currentDocumentKey\n Purchase token: $purchaseToken"
+        return JSONObject().apply {
+            put("documentKey", currentDocumentKey)
+            put("purchaseToken", purchaseToken)
+        }.toString()
+    }
+
+    private fun resetCurrentPurchase() {
+        currentDocumentKey = null
+        currentSkuDetails = null
     }
 
     private fun billingResultLogMessage(billingResult: BillingResult): String {

@@ -4,7 +4,10 @@
 
     <string name="text_will_delete_after">Will delete after:</string>
 
+    <string name="text_congrats_dialog_title">Congratulations</string>
+    <string name="text_congrats_dialog_content">You are successfully purchased document lifetime.</string>
     <string name="text_saved">Saved</string>
+    
     <string name="text_unknown_error">Unknown error</string>
 
 </resources>

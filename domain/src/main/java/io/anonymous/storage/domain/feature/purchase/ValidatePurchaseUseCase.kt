@@ -8,8 +8,8 @@ class ValidatePurchaseUseCase(
 ) : EmptyResponseInteractor<ValidatePurchaseUseCase.Request>() {
 
     override suspend fun action(request: Request) {
-        purchaseRepository.buyDocumentLifetime(request.documentKey, request.purchaseToken)
+        purchaseRepository.buyDocumentLifetime(request.documentKey, request.purchaseToken, request.sku)
     }
 
-    data class Request(val documentKey: DocumentKey, val purchaseToken: String)
+    data class Request(val documentKey: DocumentKey, val purchaseToken: String, val sku: String)
 }

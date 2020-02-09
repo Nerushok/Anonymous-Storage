@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -45,14 +46,32 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical|end">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/button_buy_document"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                    <FrameLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@android:color/transparent"
-                        android:text="Buy"
-                        android:textAllCaps="false" />
+                        android:layout_gravity="center_vertical">
+
+                        <ImageView
+                            android:id="@+id/image_document_purchased"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:visibility="gone"
+                            app:srcCompat="@drawable/ic_lock"
+                            tools:visibility="visible" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/button_buy_document"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@android:color/transparent"
+                            android:text="Buy"
+                            android:textAllCaps="false"
+                            android:visibility="gone"
+                            tools:visibility="visible" />
+
+                    </FrameLayout>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/button_save_document"
